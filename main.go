@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"os/signal"
 
+	"github.com/ReSCew/go-unix-socket-api/socket"
 	log "github.com/wired-R/minilog"
 )
-
-const SOCK = "/tmp/unixsocket"
 
 func main() {
 	log.Level = 0
@@ -17,11 +15,12 @@ func main() {
 	keyChan := make(chan os.Signal, 1)
 	signal.Notify(keyChan, os.Interrupt)
 	defer func() {
-		os.Remove(SOCK)
+		socket.CloseSocket()
 		log.Info("Exit...")
 	}()
 
-	go listener()
+	log.Info("Try to start Listener.")
+	go socket.Listener()
 
 	for {
 		select {
@@ -31,25 +30,4 @@ func main() {
 		}
 	}
 
-}
-
-func listener() {
-	l, err := net.Listen("unix", SOCK)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for {
-		conn, err := l.Accept()
-		if err != nil {
-			panic(err)
-		}
-		var buf [1024]byte
-		n, err := conn.Read(buf[:])
-		if err != nil {
-			panic(err)
-		}
-		log.Info(fmt.Sprintf("%s", string(buf[:n])))
-		conn.Close()
-	}
 }
