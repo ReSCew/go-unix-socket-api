@@ -38,7 +38,7 @@ func Listener() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Fatal(fmt.Sprintf("Accept error: ", err))
+			log.Fatal(fmt.Sprintf("Accept error: %v", err))
 		}
 
 		var buf [1024]byte
