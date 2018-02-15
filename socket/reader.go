@@ -44,13 +44,12 @@ func Listener() {
 		var buf [1024]byte
 		n, err := conn.Read(buf[:])
 		if err != nil {
-			panic(err)
+			log.Error(err)
 		}
 		log.Info(string(buf[:n]))
 		go handleMessage(buf[:n])
 		conn.Close()
 	}
-
 }
 
 //CloseSocket delete sock file
