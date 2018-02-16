@@ -4,8 +4,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"os/signal"
-	"syscall"
 
 	log "github.com/wired-R/minilog"
 )
@@ -25,22 +23,23 @@ func Listener() {
 		log.Fatal(err)
 	}
 	defer listener.Close()
+
 	log.Info("Listener successful started")
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Error(err)
 		}
 		go read(conn)
-		// conn.Close()
+		// defer conn.Close()
 	}
 }
 
 func read(r io.Reader) {
 	var buf [1024]byte
 	for {
+
 		n, err := r.Read(buf[:])
 		if err != nil {
 			log.Error(err)
@@ -48,7 +47,6 @@ func read(r io.Reader) {
 		}
 		log.Info(string(buf[:n]))
 		handleMessage(buf[:n])
-
 	}
 }
 

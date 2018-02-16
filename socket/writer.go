@@ -23,4 +23,5 @@ func write(answer *Answer) {
 	if err != nil {
 		log.Error(err)
 	}
+	c.Close()
 }
