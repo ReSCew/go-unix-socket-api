@@ -11,17 +11,14 @@ import (
 
 func main() {
 	log.Level = 0
-
 	keyChan := make(chan os.Signal, 1)
 	signal.Notify(keyChan, os.Interrupt)
 	defer func() {
 		socket.CloseSocket()
 		log.Info("Exit...")
 	}()
-
 	log.Info("Try to start Listener.")
 	go socket.Listener()
-
 	for {
 		select {
 		case <-keyChan:
@@ -29,5 +26,4 @@ func main() {
 			return
 		}
 	}
-
 }
