@@ -46,7 +46,7 @@ func read(r io.Reader) {
 			return
 		}
 		log.Info(string(buf[:n]))
-		handleMessage(buf[:n])
+		go handleMessage(buf[:n])
 	}
 }
 
