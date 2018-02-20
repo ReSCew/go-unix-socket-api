@@ -1,7 +1,7 @@
 package socket
 
 import (
-	"io"
+	"bufio"
 	"net"
 	"os"
 
@@ -11,7 +11,7 @@ import (
 const SOCK = "/tmp/rescew-push.sock"
 
 //Listener creates and listen socket file.
-func Listener() {
+func Listen() {
 	if _, err := os.Stat(SOCK); err == nil {
 		log.Warning("Socket file is exist, deleteing...")
 		os.Remove(SOCK)
@@ -20,33 +20,44 @@ func Listener() {
 
 	listener, err := net.Listen("unix", SOCK)
 	if err != nil {
-		log.Fatal(err)
+		log.Info(err)
 	}
-	defer listener.Close()
+	log.Info("Listener succesfull started.")
+
+	conns := clientConn(listener)
+	for {
+		go handleConn(<-conns)
+	}
 
 	log.Info("Listener successful started")
 
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Error(err)
-		}
-		go read(conn)
-		// defer conn.Close()
-	}
 }
 
-func read(r io.Reader) {
-	var buf [1024]byte
-	for {
-
-		n, err := r.Read(buf[:])
-		if err != nil {
-			log.Error(err)
-			return
+func clientConn(listener net.Listener) chan net.Conn {
+	ch := make(chan net.Conn)
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			ch <- conn
 		}
-		log.Info(string(buf[:n]))
-		go handleMessage(buf[:n])
+	}()
+	return ch
+}
+
+func handleConn(client net.Conn) {
+	b := bufio.NewReader(client)
+	for {
+		line, err := b.ReadBytes('\n')
+		if err != nil { // EOF, or worse
+			break
+		}
+		client.Write(line)
+		log.Info(string(line))
+		handleMessage(line)
 	}
 }
 
