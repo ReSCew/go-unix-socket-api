@@ -18,7 +18,7 @@ func main() {
 		log.Info("Exit...")
 	}()
 	log.Info("Try to start Listener.")
-	go socket.Listener()
+	go socket.Listen()
 	for {
 		select {
 		case <-keyChan:
